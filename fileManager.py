@@ -1,4 +1,5 @@
-import os
+from os import scandir
+from os import rename
 from os.path import splitext, exists, join
 from shutil import move
 import time
@@ -6,7 +7,7 @@ import logging
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-source_dir = "C:/Users/portu/Downloads"
+source_dir = "C:/Users/portu/Downloads/TESTE"
 dest_dir_videos = "C:/Users/portu/Downloads/VIDEOS"
 dest_dir_images = "C:/Users/portu/Downloads/IMAGENS"
 dest_dir_docs = "C:/Users/portu/Downloads/DOCUMENTOS"
@@ -26,25 +27,24 @@ def makeUnique(dest, name):
 
 
 def mover_arquivo(dest, entry, name):
-    file_exists = os.path.exists(dest + "/" + name)
-    if file_exists:
-        unique_name = makeUnique(name)
-        os.rename(entry, unique_name)
-    move(entry, dest)
+    if exists(f"{dest}/{name}"):
+        unique_name = makeUnique(dest, name)
+        oldName = join(dest, name)
+        newName = join(dest, unique_name)
+        rename(oldName, newName)
+    move(entry, dest, copy_function=2)
 
 
 class manipularAlteracoes(FileSystemEventHandler):
     def on_modified(self, event):
-        with os.scandir(source_dir) as entries:
+        with scandir(source_dir) as entries:
             for entry in entries:
                 name = entry.name
-                dest = source_dir
+                # dest = source_dir
                 if name.endswith('.wav') or name.endswith('.mp3'):
-                    dest = dest_dir_music
-                    mover_arquivo(dest, entry, name)
+                    mover_arquivo(dest_dir_music, entry, name)
                 elif name.endswith('.mov') or name.endswith('.mp4'):
-                    dest = dest_dir_videos
-                    mover_arquivo(dest, entry, name)
+                    mover_arquivo(dest_dir_videos, entry, name)
                 elif name.endswith('.pdf') or name.endswith('.xlsx'):
                     dest = dest_dir_docs
                     mover_arquivo(dest, entry, name)
